@@ -1,70 +1,158 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from "react";
+import { View, TextInput, Button, Text, TouchableOpacity } from "react-native";
+import axios from "axios";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const App = () => {
+  // Criando os UseStates para poder usar o Set para mudar os valores
+  const [cep, setCep] = useState("");
+  const [address, setAddress] = useState(null);
 
-export default function HomeScreen() {
+  // constante para quando clicar no botão de enviar
+  const fetchAddress = async () => {
+    try {
+      // aqui está esperando fazer a busca de acordo com o CPF e após a busca está Setando o valor do endereço
+      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+      setAddress(response.data);
+      // aqui ele busca caso der erro e mostra o erro no Console e caso houver erro ele Seta novamente o endereço como "Null"
+    } catch (error) {
+      console.error("Error fetching address:", error);
+      setAddress(null);
+    }
+  };
+
+  const NovaBusca = () => {
+    setAddress(null);
+    setCep("");
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "row",
+      }}
+    >
+      <View
+        style={{
+          height: 400,
+          width: 400,
+          backgroundColor: "white",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 10,
+          borderRightWidth: 2,
+          borderBottomWidth: 2,
+          borderColor: "#363636",
+          margin: 200,
+        }}
+      >
+        {/* Informações para chamar o Icon */}
+        <FontAwesome name="map-o" color={"#DC143C"} size={60} />
+        <TextInput
+          placeholder="Digite o CEP"
+          // Value é o valor que aparece no Inpit enquanto a pessoa digita, ele está definindo o valor como Cep
+          value={cep}
+          // Aqui está usando o OnChange para ir atualizando conforme o usuario digita
+          onChangeText={setCep}
+          keyboardType="numeric"
+          style={{
+            height: 50,
+            width: "60%",
+            borderWidth: 1,
+            borderColor: "#D3D3D3",
+            padding: 10,
+            fontSize: 15,
+            color: "#D3D3D3",
+            borderRadius: 10,
+            margin: 30,
+          }}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+        {/* Usando o onPress para chamar a função de enviar o endereço */}
+        <TouchableOpacity
+          onPress={fetchAddress}
+          style={{
+            backgroundColor: "#DC143C",
+            height: 50,
+            width: 150,
+            borderRadius: 10,
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 30,
+          }}
+        >
+          <Text style={{ color: "white", fontSize: 17 }}>Encontrar</Text>
+        </TouchableOpacity>
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+        <Text> Encontramos qualquer endereço do Brasil</Text>
+        <Text>Exemplo 72015-180</Text>
+      </View>
+      {address && (
+        // Renderizando a View com as informações caso achar um endereço válido
+        <View
+          style={{
+            height: 400,
+            width: 400,
+            backgroundColor: "white",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 10,
+            borderRightWidth: 2,
+            borderBottomWidth: 2,
+            borderColor: "#363636",
+          }}
+        >
+          <View
+            style={{
+              justifyContent: "flex-start",
+              alignItems: "flex-start",
+              margin: 20,
+            }}
+          >
+            {/* chamando os valores dos Props dentro do Endereço para passar as informações */}
+            <Text style={{ margin: 10, fontSize: 17 }}>
+              <Text style={{ fontWeight: "bold" }}>CEP:</Text>
+              <Text> {address.cep}</Text>
+            </Text>
+            <Text style={{ margin: 10, fontSize: 17 }}>
+              <Text style={{ fontWeight: "bold" }}>Rua:</Text>
+              <Text> {address.logradouro}</Text>
+            </Text>
+            <Text style={{ margin: 10, fontSize: 17 }}>
+              <Text style={{ fontWeight: "bold" }}>Bairro:</Text>
+              <Text> {address.bairro}</Text>
+            </Text>
+            <Text style={{ margin: 10, fontSize: 17 }}>
+              <Text style={{ fontWeight: "bold" }}>Cidade:</Text>
+              <Text> {address.localidade}</Text>
+            </Text>
+            <Text style={{ margin: 10, fontSize: 17 }}>
+              <Text style={{ fontWeight: "bold" }}>Estado:</Text>
+              <Text> {address.uf}</Text>
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            // botão chamando a função para fazer nova busca, zerando valores de CEP e Endereço
+            onPress={NovaBusca}
+            style={{
+              backgroundColor: "#DC143C",
+              height: 50,
+              width: 150,
+              borderRadius: 10,
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: 30,
+            }}
+          >
+            <Text style={{ color: "white", fontSize: 17 }}>Nova Busca</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+};
+
+export default App;
